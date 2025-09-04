@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
+import { createGoogleCalendarUrl, downloadICS } from '../services/calendarExport';
 import type { CalendarEvent, Attendee, Organizer } from '../types';
 
 interface EventCardProps {
@@ -93,6 +94,15 @@ const EventCard: React.FC<EventCardProps> = ({ event, timezone }) => {
     });
   }
 
+  const handleGoogleCalendarExport = () => {
+    const url = createGoogleCalendarUrl(event);
+    window.open(url, '_blank');
+  };
+
+  const handleAppleCalendarExport = () => {
+    downloadICS(event);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden my-4">
       <div className="px-6 py-4 bg-indigo-500 text-white">
@@ -126,6 +136,29 @@ const EventCard: React.FC<EventCardProps> = ({ event, timezone }) => {
             value={event.description ? <div className="whitespace-pre-wrap">{renderDescription(event.description)}</div> : <span className="text-gray-500 italic dark:text-gray-400">No description provided.</span>}
           />
         </dl>
+      </div>
+      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleGoogleCalendarExport}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            </svg>
+            Add to Google Calendar
+          </button>
+          <button
+            onClick={handleAppleCalendarExport}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"/>
+              <path d="M5 8h14V6H5v2zM7 2v2h2V2h6v2h2V2h1c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h1z"/>
+            </svg>
+            Download ICS File
+          </button>
+        </div>
       </div>
     </div>
   );

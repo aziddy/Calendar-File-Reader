@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import FileDropzone from './components/FileDropzone';
 import TimezoneSelector from './components/TimezoneSelector';
 import EventCard from './components/EventCard';
@@ -12,6 +12,8 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedTimezone, setSelectedTimezone] = useState<string>('America/New_York');
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
+  const dragCounter = useRef<number>(0);
 
   const handleFileDrop = useCallback(async (file: File) => {
     setIsLoading(true);
@@ -28,6 +30,41 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragOver(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    dragCounter.current = 0;
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      handleFileDrop(file);
+    }
+  }, [handleFileDrop]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -77,7 +114,26 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8">
+    <div 
+      className={`min-h-screen text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8 relative ${isDragOver ? 'bg-blue-50 dark:bg-blue-900' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="fixed inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center z-50 pointer-events-none">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl border-4 border-dashed border-blue-500">
+            <div className="text-center">
+              <svg className="mx-auto h-16 w-16 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">Drop your calendar file here</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Supports .ics, .vcs, and .csv files</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
