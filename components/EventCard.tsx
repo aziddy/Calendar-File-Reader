@@ -68,6 +68,31 @@ const EventCard: React.FC<EventCardProps> = ({ event, timezone }) => {
     return organizer.email ? `${organizer.name} (${organizer.email})` : organizer.name;
   }
 
+  const renderDescription = (text: string) => {
+    // URL regex pattern to match http/https URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    // Split text by URLs and create clickable links
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline break-all"
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden my-4">
       <div className="px-6 py-4 bg-indigo-500 text-white">
@@ -98,7 +123,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, timezone }) => {
           <InfoRow 
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             label="Info/Description"
-            value={event.description ? <div className="whitespace-pre-wrap">{event.description}</div> : <span className="text-gray-500 italic dark:text-gray-400">No description provided.</span>}
+            value={event.description ? <div className="whitespace-pre-wrap">{renderDescription(event.description)}</div> : <span className="text-gray-500 italic dark:text-gray-400">No description provided.</span>}
           />
         </dl>
       </div>
